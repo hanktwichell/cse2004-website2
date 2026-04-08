@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moodcast — Weather &amp; Mood Journal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+
+    <!-- ── Header ──────────────────────────────────────────── -->
+    <header>
+      <div class="header-logo">
+        <h1>Moodcast</h1>
+        <span>weather &amp; mood journal</span>
+      </div>
+      <div class="header-date" id="header-date"></div>
+    </header>
+
+    <!-- ── Toast notification ──────────────────────────────── -->
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <!-- ── Main layout ─────────────────────────────────────── -->
+    <main>
+
+      <!-- Left column -->
+      <div>
+
+        <!-- Weather Card -->
+        <div class="card card--sky" id="weather-card">
+          <div class="card-label">Current Conditions</div>
+
+          <div class="weather-loading" id="weather-loading">
+            <div class="spinner"></div>
+            <span>Fetching your location &amp; weather…</span>
+          </div>
+
+          <div class="weather-error" id="weather-error" style="display:none">
+            <span id="weather-error-msg">Could not fetch weather.</span>
+            <button id="retry-weather-btn">Retry</button>
+          </div>
+
+          <div class="weather-display" id="weather-display">
+            <div class="weather-main">
+              <div>
+                <div class="weather-temp" id="w-temp">–<sup>°F</sup></div>
+                <div class="weather-desc" id="w-desc">–</div>
+                <div class="weather-location" id="w-location">–</div>
+              </div>
+              <div class="weather-icon" id="w-icon">🌤</div>
+            </div>
+            <div class="weather-meta">
+              <div class="weather-meta-item">
+                <span>Feels like</span>
+                <strong id="w-feels">–</strong>
+              </div>
+              <div class="weather-meta-item">
+                <span>Humidity</span>
+                <strong id="w-humidity">–</strong>
+              </div>
+              <div class="weather-meta-item">
+                <span>Wind</span>
+                <strong id="w-wind">–</strong>
+              </div>
+              <div class="weather-meta-item">
+                <span>UV Index</span>
+                <strong id="w-uv">–</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mood Entry Card -->
+        <div class="card">
+          <div class="card-label">Log Your Mood</div>
+
+          <div class="form-section">
+            <label>How are you feeling?</label>
+            <div class="mood-grid" id="mood-grid" role="group" aria-label="Select a mood"></div>
+          </div>
+
+          <hr class="section-sep" />
+
+          <div class="form-section">
+            <label>Energy level</label>
+            <div class="energy-row">
+              <span class="energy-labels">😴 Low</span>
+              <input
+                type="range"
+                id="energy-slider"
+                min="1"
+                max="10"
+                value="5"
+                aria-label="Energy level from 1 to 10"
+              />
+              <span class="energy-labels">High ⚡</span>
+            </div>
+          </div>
+
+          <hr class="section-sep" />
+
+          <div class="form-section">
+            <label for="mood-note">
+              Notes <span class="label-optional">(optional)</span>
+            </label>
+            <textarea
+              id="mood-note"
+              placeholder="What's on your mind? Anything worth remembering…"
+              rows="3"
+              maxlength="300"
+            ></textarea>
+          </div>
+
+          <button class="submit-btn" id="log-btn" disabled>Log Entry</button>
+        </div>
+
+      </div>
+
+      <!-- Right column / Sidebar -->
+      <aside>
+
+        <!-- Patterns Card -->
+        <div class="card card--sage">
+          <div class="card-label">Your Patterns</div>
+          <div id="patterns-container">
+            <p class="no-patterns">
+              Log a few entries to start discovering patterns in your mood and weather.
+            </p>
+          </div>
+        </div>
+
+        <!-- Mini Chart -->
+        <div class="card card--sepia">
+          <div class="card-label">Last 7 Days — Avg Energy</div>
+          <div
+            class="mini-chart"
+            id="mini-chart"
+            aria-label="Bar chart of average energy over last 7 days"
+          ></div>
+        </div>
+
+        <!-- Recent Entries Log -->
+        <div class="card">
+          <div class="card-label">Recent Entries</div>
+          <div class="log-list" id="log-list"></div>
+        </div>
+
+      </aside>
+
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

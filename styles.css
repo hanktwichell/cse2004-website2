@@ -1,0 +1,668 @@
+/* ── Reset & Variables ───────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --ink:        #1a1510;
+  --paper:      #f5f0e8;
+  --paper-dark: #ede7d9;
+  --sepia:      #c8b89a;
+  --sepia-dark: #9c8670;
+  --rust:       #b85c38;
+  --rust-light: #e07a56;
+  --sage:       #5a7a5a;
+  --sky:        #4a7fa5;
+  --fog:        #8fa0b0;
+  --muted:      #6b5e52;
+  --line:       rgba(26, 21, 16, 0.12);
+  --shadow:     0 2px 24px rgba(26, 21, 16, 0.10);
+  --shadow-lg:  0 8px 48px rgba(26, 21, 16, 0.15);
+  --radius:     4px;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-mono:  'DM Mono', 'Courier New', monospace;
+  --font-sans:  'DM Sans', system-ui, sans-serif;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+/* ── Body & Background ───────────────────────────────────── */
+body {
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 27px,
+    var(--line) 27px,
+    var(--line) 28px
+  );
+  color: var(--ink);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  padding-bottom: 4rem;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(245, 240, 232, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.header-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.header-logo h1 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.header-logo span {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.header-date {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+/* ── Layout ──────────────────────────────────────────────── */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 0;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  main {
+    grid-template-columns: 1fr;
+    padding: 1.5rem 1rem 0;
+  }
+
+  header {
+    padding: 0 1rem;
+  }
+}
+
+/* ── Cards ───────────────────────────────────────────────── */
+.card {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--rust);
+}
+
+.card--sky::before   { background: var(--sky); }
+.card--sage::before  { background: var(--sage); }
+.card--sepia::before { background: var(--sepia-dark); }
+
+.card-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* ── Weather Card ────────────────────────────────────────── */
+#weather-card {
+  margin-bottom: 1.5rem;
+}
+
+.weather-loading,
+.weather-error {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.weather-error {
+  color: var(--rust);
+}
+
+.weather-error button {
+  background: none;
+  border: 1px solid var(--rust);
+  border-radius: var(--radius);
+  color: var(--rust);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 0.25rem 0.6rem;
+  letter-spacing: 0.05em;
+  transition: background 0.15s, color 0.15s;
+}
+
+.weather-error button:hover {
+  background: var(--rust);
+  color: var(--paper);
+}
+
+.weather-display {
+  display: none;
+}
+
+.weather-display.loaded {
+  display: block;
+}
+
+.weather-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.weather-temp {
+  font-family: var(--font-serif);
+  font-size: 3.5rem;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.weather-temp sup {
+  font-size: 1.2rem;
+  vertical-align: super;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.weather-icon {
+  font-size: 2.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+.weather-desc {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.03em;
+}
+
+.weather-location {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--sepia-dark);
+  letter-spacing: 0.05em;
+}
+
+.weather-meta {
+  display: flex;
+  gap: 1.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.weather-meta-item {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.weather-meta-item strong {
+  color: var(--ink);
+  font-weight: 400;
+  font-size: 0.82rem;
+}
+
+/* ── Mood Entry Form ─────────────────────────────────────── */
+.form-section {
+  margin-bottom: 1.25rem;
+}
+
+.form-section label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+
+.label-optional {
+  opacity: 0.5;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Mood Grid */
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.4rem;
+}
+
+.mood-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.6rem 0.3rem;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  font-family: var(--font-sans);
+}
+
+.mood-btn:hover {
+  border-color: var(--sepia);
+  background: rgba(200, 184, 154, 0.08);
+  transform: translateY(-1px);
+}
+
+.mood-btn.selected {
+  border-color: var(--rust);
+  background: rgba(184, 92, 56, 0.06);
+  box-shadow: 0 0 0 2px rgba(184, 92, 56, 0.15);
+}
+
+.mood-btn .emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.mood-btn .mood-name {
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+/* Energy Slider */
+.energy-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.energy-labels {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  background: var(--sepia);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--rust);
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Textarea */
+textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  padding: 0.75rem 1rem;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+textarea::placeholder {
+  color: var(--sepia);
+  font-style: italic;
+}
+
+textarea:focus {
+  border-color: var(--rust);
+  box-shadow: 0 0 0 3px rgba(184, 92, 56, 0.08);
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  background: var(--ink);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--paper);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.9rem;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 0.5rem;
+}
+
+.submit-btn:hover {
+  background: var(--rust);
+  transform: translateY(-1px);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+.submit-btn:disabled {
+  background: var(--sepia);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Patterns Card ───────────────────────────────────────── */
+.pattern-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.pattern-item:last-child {
+  border-bottom: none;
+}
+
+.pattern-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 0.1rem;
+}
+
+.pattern-text {
+  font-family: var(--font-serif);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink);
+  font-style: italic;
+}
+
+.pattern-text strong {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--rust);
+}
+
+.no-patterns {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+/* ── Log List ────────────────────────────────────────────── */
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 380px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sepia) transparent;
+}
+
+.log-entry {
+  padding: 0.7rem 0;
+  border-bottom: 1px dashed var(--line);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem 0.75rem;
+  align-items: start;
+  animation: fadeSlideIn 0.3s ease both;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-emoji {
+  font-size: 1.3rem;
+  line-height: 1;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+
+.log-mood-name {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+
+.log-meta {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  grid-column: 2;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.log-weather-badge {
+  background: rgba(74, 127, 165, 0.1);
+  color: var(--sky);
+  border-radius: 2px;
+  padding: 0 0.3rem;
+}
+
+.log-time {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+
+.log-note {
+  grid-column: 2;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 0.1rem;
+}
+
+.log-empty {
+  text-align: center;
+  padding: 1.5rem 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--sepia-dark);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ── Mini Chart ──────────────────────────────────────────── */
+.mini-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 48px;
+  padding-top: 0.5rem;
+}
+
+.chart-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  height: 100%;
+}
+
+.chart-bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-height: 3px;
+}
+
+.chart-tick {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--muted);
+}
+
+/* ── Toast ───────────────────────────────────────────────── */
+#toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(4rem);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  padding: 0.7rem 1.4rem;
+  border-radius: 100px;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ── Spinner ─────────────────────────────────────────────── */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--line);
+  border-top-color: var(--rust);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Section Separator ───────────────────────────────────── */
+.section-sep {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 1.25rem 0;
+}
